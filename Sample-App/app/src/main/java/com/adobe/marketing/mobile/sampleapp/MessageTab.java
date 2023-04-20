@@ -2,34 +2,44 @@ package com.adobe.marketing.mobile.sampleapp;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.adobe.marketing.mobile.AdobeCallback;
-import com.adobe.marketing.mobile.Edge;
-import com.adobe.marketing.mobile.EdgeCallback;
-import com.adobe.marketing.mobile.EdgeEventHandle;
-import com.adobe.marketing.mobile.ExperienceEvent;
+import com.adobe.marketing.mobile.MobileCore;
 import com.adobe.marketing.mobile.edge.identity.Identity;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 public class MessageTab extends Fragment {
     TextView tvECID;
+    Button btnFullScreenMessage;
+    Button btnModalMessage;
+    Button btnTopBanner;
+    Button btnBottomBanner;
+    Toast toast = null;
+
+    public void showToast(final String message) {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (toast != null) {
+                    toast.cancel();
+                }
+                toast = Toast.makeText(MainApp.getAppContext(), message, Toast.LENGTH_LONG);
+                toast.show();
+            }
+        });
+    }
 
     private static final String LOG_TAG = "Assurance Tab";
 
@@ -48,6 +58,26 @@ public class MessageTab extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         tvECID = view.findViewById(R.id.tv_lbl_ecidLabel);
+
+        btnFullScreenMessage = getView().findViewById(R.id.btn_fullScreenMessage);
+        btnFullScreenMessage.setOnClickListener(trackInAppMessage("sampleAppFullScreen"));
+
+        btnModalMessage = getView().findViewById(R.id.btn_modalMessage);
+        btnModalMessage.setOnClickListener(trackInAppMessage("sampleAppModal"));
+
+        btnTopBanner = getView().findViewById(R.id.btn_topBanner);
+        btnTopBanner.setOnClickListener(trackInAppMessage("sampleAppBannerTop"));
+
+        btnBottomBanner = getView().findViewById(R.id.btn_bottomBanner);
+        btnBottomBanner.setOnClickListener(trackInAppMessage("sampleAppBannerBottom"));
+    }
+
+    @NonNull
+    private View.OnClickListener trackInAppMessage(String actionName) {
+        return v -> {
+            MobileCore.trackAction(actionName, null);
+            showToast("Track action \"" + actionName + "\" triggered");
+        };
     }
 
     @Override
